@@ -8,26 +8,27 @@ import React, {
   Component,
   StyleSheet,
   Text,
-  View
+  View,
+  ListView,
 } from 'react-native';
 
-class ReactNativeTest extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Shake or press menu button for dev menu
-        </Text>
-      </View>
-    );
-  }
-}
+var ReactNativeTest = React.createClass({
+    getInitialState: function() {
+        var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        let titleArray = getData();
+        return {
+            dataSource: ds.cloneWithRows(titleArray),
+        };
+    },
+    render: function() {
+        return (
+            <ListView
+                dataSource={this.state.dataSource}
+                renderRow={(rowData) => <Text>{rowData}</Text>}
+            />
+        );
+    }
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -47,5 +48,31 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+function getData(){
+    fetch('http://apis.baidu.com/apistore/wooyun/unclaim?limit=10', {
+        method: 'POST',
+        headers: {
+            'apikey': '9257b766dbe92c7ef1f2191e915ca015',
+            'Content-Type': 'application/json',
+        },
+    })
+        .then((response) => response.text())
+        .then((responseText) => {
+            let obj = JSON.parse(responseText);
+            let titleArray = [];
+            for (var o of obj) {
+                console.log(o.title);
+                titleArray.push(o.title)
+            }
+            console.log(obj.length);
+            return titleArray;
+        })
+        .catch((error) => {
+            console.warn(error);
+        });
+}
+
+
 
 AppRegistry.registerComponent('ReactNativeTest', () => ReactNativeTest);
